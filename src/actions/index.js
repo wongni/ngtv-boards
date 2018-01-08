@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import axios from 'axios'
 import htmlToJson from 'html-to-json'
 
@@ -8,8 +7,7 @@ export const ROOT_URL = 'http://nicegame.tv'
 const ROOT_PROXY_URL = `https://proxy-sauce.glitch.me/${ROOT_URL}`
 export const OPEN_MENU = 'OPEN_MENU'
 export const CLOSE_MENU = 'CLOSE_MENU'
-export const SELECT_MENU = 'SELECT_MENU'
-export const FETCH_MENU_ITEMS = 'FETCH_MENU_ITEMS'
+export const FETCH_BOARDS = 'FETCH_BOARDS'
 export const FETCH_POSTS = 'FETCH_POSTS'
 export const FETCH_POST = 'FETCH_POST'
 
@@ -26,37 +24,34 @@ export function closeMenu () {
   }
 }
 
-export function selectMenu (board) {
-  return {
-    type: SELECT_MENU,
-    payload: board
-  }
-}
-
-export function fetchMenuItems () {
+export function fetchBoards () {
   const request = axios.get(`${ROOT_PROXY_URL}/bbs/freeboard/list`)
 
   return (dispatch) => {
     request.then(({ data }) => {
       retrieveBoards(data).then(({ boards }) => {
         dispatch({
-          type: FETCH_MENU_ITEMS,
-          payload: _.mapKeys(boards, 'id')
+          type: FETCH_BOARDS,
+          payload: boards
         })
       })
     })
   }
 }
 
-export function fetchPosts (boardId) {
-  const request = axios.get(`${ROOT_PROXY_URL}/bbs/${boardId}/list`)
+export function fetchPosts (boardId, page) {
+  const request = axios.get(`${ROOT_PROXY_URL}/bbs/${boardId}/list/${page}`)
 
   return dispatch => {
     request.then(({ data }) => {
       retrievePosts(data).then(({ posts }) => {
         dispatch({
           type: FETCH_POSTS,
-          payload: _.mapKeys(posts, 'id')
+          payload: {
+            id: boardId,
+            posts,
+            page
+          }
         })
       })
     })
@@ -72,9 +67,12 @@ export function fetchPost (boardId, postId) {
         dispatch({
           type: FETCH_POST,
           payload: {
-            id: postId,
-            content: posts[0].content,
-            comments: comments
+            id: boardId,
+            post: {
+              id: postId,
+              content: posts[0].content,
+              comments: comments
+            }
           }
         })
       })
@@ -116,7 +114,7 @@ function retrievePosts (html) {
       title: function ($section) {
         return $section.find('td.l > p > a').text()
       },
-      comments: function ($section) {
+      numComments: function ($section) {
         const numCommentsStr = $section.find('td.l > p > a:nth-child(2)').text()
         return numCommentsStr.slice(1, numCommentsStr.length - 1)
       },

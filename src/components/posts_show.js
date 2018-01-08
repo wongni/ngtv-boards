@@ -15,12 +15,14 @@ class PostsShow extends Component {
 
   renderComments = () => {
     return _.map(this.props.post.comments, comment => {
+      const avatarUrl = comment.avatar.indexOf('http') === 0 ?
+        comment.avatar : `${ROOT_URL}${comment.avatar}`
       return (
         <ListItem
           button
           key={comment.created}
         >
-          <Avatar src={`${ROOT_URL}${comment.avatar}`}></Avatar>
+          <Avatar src={avatarUrl}></Avatar>
           <ListItemText
             primary={comment.content}
             secondary={`${comment.writer} ${comment.created}`}
@@ -47,9 +49,16 @@ class PostsShow extends Component {
   }
 }
 
-function mapStatetoProps ({ posts }, ownProps) {
+function mapStatetoProps ({ boards }, ownProps) {
+  const { id, postId } = ownProps.match.params
+  if (!boards[id]) {
+    return {
+      post: null
+    }
+  }
+
   return {
-    post: posts[ownProps.match.params.postId]
+    post: boards[id].posts[postId]
   }
 }
 

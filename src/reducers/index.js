@@ -1,10 +1,10 @@
 import { combineReducers } from 'redux'
 import MenuReducer from './reducer_menu'
-import PostsReducer from './reducer_posts'
+import BoardsReducer from './reducer_boards'
 
 const rootReducer = combineReducers({
-  menu: MenuReducer,
-  posts: PostsReducer
+  menuTarget: MenuReducer,
+  boards: BoardsReducer
 })
 
 export default rootReducer

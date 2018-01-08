@@ -1,3 +1,5 @@
+import _ from 'lodash'
+
 // React related imports
 import React from 'react'
 import { connect } from 'react-redux'
@@ -11,8 +13,8 @@ import Typography from 'material-ui/Typography'
 import { withStyles } from 'material-ui/styles'
 import MenuIcon from 'material-ui-icons/Menu'
 
-import { openMenu, closeMenu } from '../actions'
-import AppMenu from './app_menu'
+import { openMenu, closeMenu, fetchBoards } from '../actions'
+import BoardList from './boards_list'
 
 const styles = {
   root: {
@@ -28,6 +30,10 @@ const styles = {
 }
 
 class TitleBar extends React.Component {
+  componentDidMount () {
+    this.props.fetchBoards()
+  }
+
   handleClick = event => {
     this.props.openMenu(event.currentTarget)
   }
@@ -46,9 +52,9 @@ class TitleBar extends React.Component {
             >
               <MenuIcon />
             </IconButton>
-            <AppMenu />
+            <BoardList />
             <Typography type="title" color="inherit" className={classes.flex}>
-              NGTV - {this.props.selectedBoard}
+              NGTV - {this.props.selectedBoard ? this.props.selectedBoard.name : '로딩중...'}
             </Typography>
             <Button color="contrast">Login</Button>
           </Toolbar>
@@ -58,12 +64,12 @@ class TitleBar extends React.Component {
   }
 }
 
-function mapStateToProps ({ menu: { items, selected } }) {
+function mapStateToProps ({ boards }) {
   return {
-    selectedBoard: items && selected ? items[selected].name : '게시판을 선택하세요'
+    selectedBoard: _.find(boards, board => board.selected)
   }
 }
 
 export default withStyles(styles)(
-  connect(mapStateToProps, { openMenu, closeMenu }
+  connect(mapStateToProps, { openMenu, closeMenu, fetchBoards }
   )(TitleBar))
